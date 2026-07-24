@@ -7,6 +7,7 @@
     
     
 
+    
     OPTIONS()
     as (
       -- ============================================================================
@@ -39,9 +40,9 @@ union all
 
 select
     event_date,
-    'Reorder Click',
+    'Begin Checkout',
     3,
-    reorder_clickers
+    checkout_starters
 from `genai-copilot-enterprisedata`.`metrics`.`conversion_rate`
 
 union all

@@ -234,9 +234,23 @@ city_store_ids = {}
 
 for city, info in CITY_INFO.items():
     city_store_ids[city] = []
-    for locality in info["localities"]:
+    for idx, locality in enumerate(info["localities"]):
         store_id = f"{info['code']}-{locality.replace(' ', '').replace('-', '')}"
         launch = random_date(START_DATE, START_DATE + timedelta(days=DATE_RANGE_DAYS // 2))
+        
+        if idx == 0:
+            demand_tier = "flagship"
+            demand_multiplier = round(random.uniform(2.6, 3.4), 2)
+        else:
+            demand_tier = random.choices(
+                ["high", "medium", "low"], weights=[20, 45, 35]
+            )[0]
+            demand_multiplier = {
+                "high": round(random.uniform(1.5, 2.2), 2),
+                "medium": round(random.uniform(0.8, 1.3), 2),
+                "low": round(random.uniform(0.3, 0.7), 2),
+            }[demand_tier]
+
         store = {
             "store_id": store_id,
             "city": city,
@@ -247,6 +261,8 @@ for city, info in CITY_INFO.items():
             "sku_capacity": random.randint(2000, 3000),
             "delivery_radius_km": round(random.uniform(1.5, 2.5), 2),
             "launch_date": launch.isoformat(),
+            "demand_tier": demand_tier,
+            "demand_multiplier": demand_multiplier,
         }
         dark_stores.append(store)
         store_lookup[store_id] = store
@@ -287,11 +303,12 @@ with open(OUT_DIR / "delivery_partners.csv", "w", newline="") as f:
 # ── CUSTOMERS ────────────────────────────────────────────────────────────────
 print("Generating customers...")
 all_store_ids = list(store_lookup.keys())
+store_choice_weights = [store_lookup[sid]["demand_multiplier"] for sid in all_store_ids]
 customers = []
 for i in range(1, N_CUSTOMERS + 1):
     # Capped at END_DATE (== TODAY) so no customer signs up "in the future".
     signup = random_date(START_DATE, END_DATE)
-    home_store_id = random.choice(all_store_ids)
+    home_store_id = random.choices(all_store_ids, weights=store_choice_weights, k=1)[0]
     store = store_lookup[home_store_id]
     is_pass_member = random.random() < 0.25  # Zepto Pass-style subscription
     customers.append({
@@ -353,7 +370,10 @@ print("Generating orders + order_items...")
 orders = []
 order_items = []
 item_counter = 1
-customer_weights = [3 if c["is_pass_member"] else 1 for c in customers]  # pass members order more
+customer_weights = [
+    (3 if c["is_pass_member"] else 1) * store_lookup[c["home_store_id"]]["demand_multiplier"]
+    for c in customers
+]  # pass members order more; customers at high-demand stores order more too
 
 for i in range(1, N_ORDERS + 1):
     order_id = f"ORD{i:07d}"
@@ -484,8 +504,9 @@ with open(OUT_DIR / "order_issues.csv", "w", newline="") as f:
 print("Generating events (session-based funnel)...")
 STAGE_CONVERSION = {
     "add_to_cart": 0.42,   # 42% of sessions add something to cart
+    "begin_checkout": 0.70, # 70% of add-to-cart sessions go to checkout
     "reorder_click": 0.12,  # 12% of add-to-cart sessions use the reorder shortcut
-    "purchase": 0.55,      # 55% of add-to-cart sessions go on to purchase
+    "purchase": 0.78,      # 78% of checkout sessions go on to purchase
 }
 
 events = []
@@ -523,15 +544,25 @@ for _ in range(N_SESSIONS):
             })
             event_id += 1
 
-        if random.random() < STAGE_CONVERSION["purchase"]:
-            purchase_ts = cart_ts + timedelta(minutes=random.randint(1, 10))
+        if random.random() < STAGE_CONVERSION["begin_checkout"]:
+            checkout_ts = cart_ts + timedelta(minutes=random.randint(1, 4))
             events.append({
                 "event_id": f"EVT{event_id:08d}",
                 "customer_id": session_customer,
-                "event_type": "purchase",
-                "event_timestamp": purchase_ts.isoformat(),
+                "event_type": "begin_checkout",
+                "event_timestamp": checkout_ts.isoformat(),
             })
             event_id += 1
+
+            if random.random() < STAGE_CONVERSION["purchase"]:
+                purchase_ts = checkout_ts + timedelta(minutes=random.randint(1, 10))
+                events.append({
+                    "event_id": f"EVT{event_id:08d}",
+                    "customer_id": session_customer,
+                    "event_type": "purchase",
+                    "event_timestamp": purchase_ts.isoformat(),
+                })
+                event_id += 1
 
 with open(OUT_DIR / "events.csv", "w", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=events[0].keys())

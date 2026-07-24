@@ -28,9 +28,9 @@ union all
 
 select
     event_date,
-    'Reorder Click',
+    'Begin Checkout',
     3,
-    reorder_clickers
+    checkout_starters
 from {{ ref('conversion_rate') }}
 
 union all

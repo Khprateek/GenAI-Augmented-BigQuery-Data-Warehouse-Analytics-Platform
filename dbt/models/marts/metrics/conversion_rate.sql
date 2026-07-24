@@ -28,6 +28,9 @@ daily_funnel as (
         count(distinct case when event_type = 'add_to_cart'
                             then customer_id end)           as add_to_carters,
 
+        count(distinct case when event_type = 'begin_checkout'
+                            then customer_id end)           as checkout_starters,
+
         count(distinct case when event_type = 'reorder_click'
                             then customer_id end)           as reorder_clickers,
 
@@ -47,10 +50,12 @@ with_rates as (
         -- Conversion rates
         round(safe_divide(add_to_carters, page_viewers), 4)
                                                                     as view_to_cart_pct,
+        round(safe_divide(checkout_starters, add_to_carters), 4)
+                                                                    as cart_to_checkout_pct,
         round(safe_divide(purchasers, page_viewers), 4)
                                                                     as overall_conversion_pct,
-        round(safe_divide(purchasers, add_to_carters), 4)
-                                                                    as cart_to_purchase_pct,
+        round(safe_divide(purchasers, checkout_starters), 4)
+                                                                    as checkout_to_purchase_pct,
 
         -- Reorder engagement
         round(safe_divide(reorder_clickers, unique_visitors), 4)

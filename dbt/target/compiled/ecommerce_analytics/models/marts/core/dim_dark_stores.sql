@@ -29,6 +29,7 @@ order_stats as (
     select
         store_id,
         count(distinct order_id)                    as total_orders,
+        percent_rank() over (order by count(distinct order_id) desc) as volume_percentile,
         countif(order_status = 'DELIVERED')          as delivered_orders,
         countif(order_status = 'CANCELLED')          as cancelled_orders,
         round(avg(case when order_status = 'DELIVERED'
@@ -83,10 +84,10 @@ final as (
 
         -- ── Derived labels ──────────────────────────────────────────────────
         case
-            when coalesce(os.total_orders, 0) >= 5000 then 'High Volume'
-            when coalesce(os.total_orders, 0) >= 1000 then 'Medium Volume'
-            when coalesce(os.total_orders, 0) > 0     then 'Low Volume'
-            else 'Not Operational'
+            when coalesce(os.total_orders, 0) = 0 then 'Not Operational'
+            when os.volume_percentile <= 0.2      then 'High Volume'   -- Top 20%
+            when os.volume_percentile <= 0.8      then 'Medium Volume' -- Next 30%
+            else 'Low Volume'                                          -- Bottom 50%
         end                                         as volume_tier,
 
         case
