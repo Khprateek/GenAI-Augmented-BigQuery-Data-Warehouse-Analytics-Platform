@@ -267,7 +267,13 @@ The dbt project follows the **staging → intermediate → marts** layered archi
 ---
 
 ## Dashboard Features
+### Dashboard Preview
 
+<p align="center">
+  <img src="assets/dashboard.png" alt="Cloud Analytics Dashboard" width="1000">
+</p>
+
+The Streamlit dashboard provides executive-level insights across revenue, customers, products, marketing, and churn prediction.
 ### Multi-Tab Executive Dashboard
 
 | Tab | Key Metrics |
@@ -296,7 +302,13 @@ The copilot translates natural language business questions into validated BigQue
 - *"Which dark store had the highest on-time delivery rate last month?"*
 - *"Show me revenue trend by category for Q1 2025"*
 - *"What is the average delivery time for pass members vs non-pass members?"*
+### Copilot Dashboard Preview
 
+<p align="center">
+  <img src="assets/streamlit_dashboard.png" alt="Cloud Analytics Copilot Dashboard" width="1000">
+</p>
+
+The analytics copilot dashboard
 ### Query Execution Flow
 
 1. **User asks question**: E.g., *"What was the conversion rate trend last month?"*
