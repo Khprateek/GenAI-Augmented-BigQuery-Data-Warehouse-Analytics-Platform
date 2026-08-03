@@ -270,7 +270,7 @@ The dbt project follows the **staging → intermediate → marts** layered archi
 ### Dashboard Preview
 
 <p align="center">
-  <img src="assets/dashboard.png" alt="Cloud Analytics Dashboard" width="1000">
+  <img src="asset/dashboard.png" alt="Cloud Analytics Dashboard" width="1000">
 </p>
 
 The Streamlit dashboard provides executive-level insights across revenue, customers, products, marketing, and churn prediction.
@@ -305,7 +305,7 @@ The copilot translates natural language business questions into validated BigQue
 ### Copilot Dashboard Preview
 
 <p align="center">
-  <img src="assets/streamlit_dashboard.png" alt="Cloud Analytics Copilot Dashboard" width="1000">
+  <img src="asset/streamlit_dashboard.png" alt="Cloud Analytics Copilot Dashboard" width="1000">
 </p>
 
 The analytics copilot dashboard
