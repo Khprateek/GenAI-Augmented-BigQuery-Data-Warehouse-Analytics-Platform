@@ -82,6 +82,7 @@ The core analytical schema follows a traditional dimensional model centered arou
 | **Dashboard** | Streamlit, Plotly | Multi-tab executive BI dashboard |
 | **Machine Learning** | scikit-learn | Logistic Regression churn prediction model |
 | **Generative AI** | Gemini 1.5 Pro | Schema-grounded NL-to-SQL copilot with insight generation |
+| **Infrastructure** | Terraform | Infrastructure as Code (IaC) provisioning of BigQuery datasets |
 
 ---
 
@@ -92,9 +93,15 @@ The core analytical schema follows a traditional dimensional model centered arou
 │   ├── generate_data.py                # Zepto-style dataset generator (9 tables)
 │   └── raw/                            # Generated CSV files
 │
+├── infra/                              # Terraform Infrastructure as Code (IaC)
+│   ├── main.tf                         # Main dataset resource definitions
+│   ├── variables.tf                    # GCP project and region variables
+│   ├── outputs.tf                      # Created dataset confirmation outputs
+│   └── terraform.tfvars                # Project variable values
+│
 ├── loaders/
-│   ├── load_to_bigquery.py             # CSV → BigQuery ingestion (autodetect)
-│   └── setup_datasets.py              # Provisions raw/staging/marts datasets
+│   ├── load_to_bigquery.py             # CSV → BigQuery Ingestion (autodetect)
+│   └── setup_datasets.py               # (Alternative) Python setup helper for BQ
 │
 ├── dbt/
 │   ├── dbt_project.yml
@@ -205,11 +212,28 @@ GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
 GEMINI_API_KEY=your-gemini-api-key
 ```
 
-### 3. Generate & Load Data
+### 3. Provision BigQuery Datasets & Load Data
 
+You can set up your BigQuery datasets using **Terraform (recommended)** or the alternative python setup script.
+
+#### Option A: Using Terraform (Recommended)
+Make sure you have Terraform installed and GCP authenticated (either via `GOOGLE_APPLICATION_CREDENTIALS` or login).
+```bash
+cd infra
+terraform init
+terraform apply -var="project_id=your-gcp-project-id"
+cd ..
+```
+
+#### Option B: Using Python Setup Script
+```bash
+python loaders/setup_datasets.py
+```
+
+#### Load Data
+After provisioning the datasets:
 ```bash
 python data/generate_data.py
-python loaders/setup_datasets.py
 python loaders/load_to_bigquery.py
 ```
 

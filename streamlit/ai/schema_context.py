@@ -77,7 +77,7 @@ is_pass_member
 signup_date
 days_since_signup
 total_orders
-total_revenue
+lifetime_revenue
 avg_order_value
 is_churned
 rfm_segment
