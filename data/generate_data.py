@@ -584,7 +584,7 @@ while current <= END_DATE:
 
         cpc_lo, cpc_hi = CPC_RANGE_INR[channel]
         cpc = random.uniform(cpc_lo, cpc_hi)
-        clicks = max(1, int(spend / cpc))  # clicks now scale with actual spend
+        clicks = max(1, int(spend / cpc))
         impressions = clicks * random.randint(10, 30)
         app_installs = int(clicks * random.uniform(0.02, 0.08))
 
