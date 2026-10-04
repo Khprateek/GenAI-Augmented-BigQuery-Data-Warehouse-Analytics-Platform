@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuickCommerceAppEvent",
+  "description": "Event emitted on user actions in mobile app / web frontend.",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "page_view",
+        "search",
+        "product_view",
+        "add_to_cart",
+        "remove_from_cart",
+        "checkout_start",
+        "payment_initiated",
+        "order_success"
+      ]
+    },
+    "platform": {
+      "type": "string",
+      "enum": ["android", "ios", "web"]
+    },
+    "page_or_screen": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "search_term": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "event_id",
+    "customer_id",
+    "session_id",
+    "event_type",
+    "platform",
+    "timestamp"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuickCommerceOrderEvent",
+  "description": "Event emitted when a customer completes checkout on the quick-commerce app.",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "description": "Unique identifier for the order (e.g., ORD-100234)"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Unique identifier for the customer"
+    },
+    "dark_store_id": {
+      "type": "string",
+      "description": "Micro-fulfilment center fulfilling this order (e.g., DS-DEL-001)"
+    },
+    "delivery_partner_id": {
+      "type": "string",
+      "description": "Assigned rider partner"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": { "type": "string" },
+          "product_name": { "type": "string" },
+          "quantity": { "type": "integer", "minimum": 1 },
+          "unit_price_inr": { "type": "number", "minimum": 0 },
+          "category": { "type": "string" }
+        },
+        "required": ["product_id", "product_name", "quantity", "unit_price_inr"]
+      }
+    },
+    "total_amount_inr": {
+      "type": "number",
+      "description": "Total order payable amount in INR"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": ["UPI", "CREDIT_CARD", "DEBIT_CARD", "NET_BANKING", "COD", "WALLET"]
+    },
+    "delivery_promise_min": {
+      "type": "integer",
+      "description": "Guaranteed SLA in minutes (e.g. 10)"
+    },
+    "is_zepto_pass": {
+      "type": "boolean",
+      "description": "Flag indicating if customer holds subscription pass"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "order_id",
+    "customer_id",
+    "dark_store_id",
+    "items",
+    "total_amount_inr",
+    "payment_method",
+    "timestamp"
+  ]
+}

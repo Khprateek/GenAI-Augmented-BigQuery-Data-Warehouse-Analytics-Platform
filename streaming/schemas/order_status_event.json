@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuickCommerceOrderStatusEvent",
+  "description": "Event emitted at every transition of an order lifecycle.",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "description": "Unique order identifier"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ORDER_PLACED",
+        "DARK_STORE_PACKING",
+        "RIDER_ASSIGNED",
+        "OUT_FOR_DELIVERY",
+        "DELIVERED",
+        "CANCELLED"
+      ]
+    },
+    "dark_store_id": {
+      "type": "string"
+    },
+    "delivery_partner_id": {
+      "type": "string"
+    },
+    "elapsed_time_sec": {
+      "type": "integer",
+      "description": "Seconds elapsed since order placement"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "order_id",
+    "customer_id",
+    "status",
+    "timestamp"
+  ]
+}

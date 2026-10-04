@@ -75,6 +75,7 @@ The core analytical schema follows a traditional dimensional model centered arou
 | Layer | Technology | Role |
 |---|---|---|
 | **Data Generation** | Python, Faker (`en_IN`) | Simulates Zepto-style quick-commerce operational data |
+| **Streaming & Messaging** | Apache Kafka, Kafka UI, Docker | Real-time event streaming (orders, delivery status, app events) |
 | **Ingestion** | Python, `google-cloud-bigquery` | Batch loads CSVs into BigQuery `raw` dataset |
 | **Data Warehouse** | Google BigQuery | Serverless, columnar cloud warehouse |
 | **Data Modeling** | dbt Core 1.11+ | Staging → Intermediate → Star Schema → Metrics |
@@ -82,7 +83,7 @@ The core analytical schema follows a traditional dimensional model centered arou
 | **Dashboard** | Streamlit, Plotly | Multi-tab executive BI dashboard |
 | **Machine Learning** | scikit-learn | Logistic Regression churn prediction model |
 | **Generative AI** | Gemini 1.5 Pro | Schema-grounded NL-to-SQL copilot with insight generation |
-| **Infrastructure** | Terraform | Infrastructure as Code (IaC) provisioning of BigQuery datasets |
+| **Infrastructure & Containers** | Terraform, Docker Compose | Cloud IaC and local containerized Kafka stack |
 
 ---
 
@@ -98,6 +99,26 @@ The core analytical schema follows a traditional dimensional model centered arou
 │   ├── variables.tf                    # GCP project and region variables
 │   ├── outputs.tf                      # Created dataset confirmation outputs
 │   └── terraform.tfvars                # Project variable values
+│
+├── docker/                             # Containerized infrastructure
+│   └── kafka/
+│       ├── docker-compose.yml          # Kafka (KRaft), Kafka UI & init service
+│       └── bootstrap_topics.sh         # Kafka topic creation & readiness script
+│
+├── streaming/                          # Real-time event streaming pipeline
+│   ├── config.py                       # Kafka broker & topic configurations
+│   ├── schemas/                        # Event JSON schemas
+│   │   ├── order_event.json
+│   │   ├── order_status_event.json
+│   │   └── app_event.json
+│   ├── producers/                      # Event producers (orders, status, clickstream)
+│   │   ├── order_producer.py
+│   │   ├── order_status_producer.py
+│   │   └── app_event_producer.py
+│   └── consumers/                      # Topic consumers
+│       ├── order_consumer.py
+│       ├── order_status_consumer.py
+│       └── app_event_consumer.py
 │
 ├── loaders/
 │   ├── load_to_bigquery.py             # CSV → BigQuery Ingestion (autodetect)
@@ -184,6 +205,7 @@ The core analytical schema follows a traditional dimensional model centered arou
 ### Prerequisites
 
 - Python **3.11+**
+- **Docker & Docker Compose** (for Kafka event streaming & Kafka UI)
 - A GCP project with the **BigQuery API** enabled
 - A service account JSON with `BigQuery Admin` permissions
 - dbt Core **1.11+** with the `dbt-bigquery` adapter
@@ -237,7 +259,21 @@ python data/generate_data.py
 python loaders/load_to_bigquery.py
 ```
 
-### 4. Run dbt Pipeline
+### 4. Start Real-Time Event Streaming (Kafka & Docker)
+
+Spin up Apache Kafka (KRaft mode), topic bootstrap automation, and Kafka UI:
+
+```bash
+cd docker/kafka
+docker compose up -d
+cd ../..
+```
+
+- **Kafka Broker (Host)**: `localhost:9092`
+- **Kafka UI Dashboard**: [http://localhost:8080](http://localhost:8080)
+- The `init-kafka` container automatically creates topics (`quickcommerce.orders`, `quickcommerce.order_status`, `quickcommerce.app_events`).
+
+### 5. Run dbt Pipeline
 
 ```bash
 cd dbt
@@ -247,7 +283,7 @@ dbt test
 cd ..
 ```
 
-### 5. Launch Dashboard
+### 6. Launch Dashboard
 
 ```bash
 cd streamlit
