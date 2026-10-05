@@ -5,7 +5,9 @@ BOOTSTRAP_SERVER="${KAFKA_BOOTSTRAP_SERVER:-kafka:29092}"
 
 topics=(
     "quickcommerce.orders"
+    "quickcommerce.order_items"
     "quickcommerce.order_status"
+    "quickcommerce.order_issues"
     "quickcommerce.app_events"
 )
 

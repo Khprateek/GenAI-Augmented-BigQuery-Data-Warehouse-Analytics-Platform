@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuickCommerceOrderItemEvent",
+  "description": "Event emitted for individual line items purchased within an order.",
+  "type": "object",
+  "properties": {
+    "order_item_id": {
+      "type": "string",
+      "description": "Unique identifier for the line item (e.g. ITEM00000001)"
+    },
+    "order_id": {
+      "type": "string",
+      "description": "Foreign key to the parent order (e.g. ORD0000001)"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "SKU identifier (e.g. PROD000123)"
+    },
+    "quantity": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "unit_price": {
+      "type": "number",
+      "minimum": 0
+    },
+    "is_substituted": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "order_item_id",
+    "order_id",
+    "product_id",
+    "quantity",
+    "unit_price",
+    "is_substituted"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuickCommerceOrderIssueEvent",
+  "description": "Event emitted when a customer reports an issue with a delivered order.",
+  "type": "object",
+  "properties": {
+    "issue_id": {
+      "type": "string",
+      "description": "Unique issue identifier (e.g. ISSUE000001)"
+    },
+    "order_id": {
+      "type": "string",
+      "description": "Associated order ID"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Defective / missing product ID"
+    },
+    "reported_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "issue_type": {
+      "type": "string",
+      "enum": ["Damaged item", "Wrong item delivered", "Item missing", "Expired product", "Poor quality"]
+    },
+    "resolution": {
+      "type": "string",
+      "enum": ["Refund", "Replacement", "Wallet Credit"]
+    },
+    "resolved_same_day": {
+      "type": "boolean"
+    },
+    "refund_amount": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "issue_id",
+    "order_id",
+    "product_id",
+    "reported_at",
+    "issue_type",
+    "resolution",
+    "resolved_same_day",
+    "refund_amount"
+  ]
+}

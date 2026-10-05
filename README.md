@@ -91,8 +91,21 @@ The core analytical schema follows a traditional dimensional model centered arou
 
 ```text
 ├── data/
-│   ├── generate_data.py                # Zepto-style dataset generator (9 tables)
-│   └── raw/                            # Generated CSV files
+│   ├── generate_data.py                # Master orchestrator (runs dimensions + facts)
+│   ├── generate_dimensions.py          # Master / dimension table generator (stores, riders, customers, products)
+│   ├── generate_facts.py               # Transactional / fact generator (orders, items, issues, events)
+│   └── raw/
+│       ├── dimensions/                 # Master / Dimension tables (static reference seeds)
+│       │   ├── dark_stores.csv         # Micro-fulfilment center locations (~59 rows)
+│       │   ├── delivery_partners.csv   # Rider partner master (~1,500 rows)
+│       │   ├── customers.csv           # Customer profiles & Zepto Pass (~20,000 rows)
+│       │   ├── products.csv            # Grocery SKU catalog & pricing (~5,000 rows)
+│       │   └── marketing_spend.csv     # Daily acquisition spend (~9,000 rows)
+│       └── facts/                      # Transactional / Fact tables (baseline historical)
+│           ├── orders.csv              # Order headers (~50,000 rows)
+│           ├── order_items.csv         # Order line items (~180,000 rows)
+│           ├── order_issues.csv        # Customer issues & resolutions (~1,300 rows)
+│           └── events.csv              # Clickstream activity (~300,000 rows)
 │
 ├── infra/                              # Terraform Infrastructure as Code (IaC)
 │   ├── main.tf                         # Main dataset resource definitions
@@ -106,22 +119,28 @@ The core analytical schema follows a traditional dimensional model centered arou
 │       └── bootstrap_topics.sh         # Kafka topic creation & readiness script
 │
 ├── streaming/                          # Real-time event streaming pipeline
-│   ├── config.py                       # Kafka broker & topic configurations
-│   ├── schemas/                        # Event JSON schemas
-│   │   ├── order_event.json
-│   │   ├── order_status_event.json
-│   │   └── app_event.json
-│   ├── producers/                      # Event producers (orders, status, clickstream)
-│   │   ├── order_producer.py
-│   │   ├── order_status_producer.py
-│   │   └── app_event_producer.py
-│   └── consumers/                      # Topic consumers
-│       ├── order_consumer.py
-│       ├── order_status_consumer.py
-│       └── app_event_consumer.py
+│   ├── config.py                       # Central Kafka broker, topics & consumer groups
+│   ├── schemas/                        # Event JSON schemas (data contracts)
+│   │   ├── order_event.json            # Order header events (matches raw.orders)
+│   │   ├── order_items_event.json      # Line-item events (matches raw.order_items)
+│   │   ├── order_status_event.json     # Delivery lifecycle state transitions
+│   │   ├── order_issue_event.json      # Customer issues & resolutions (matches raw.order_issues)
+│   │   └── app_event.json              # Clickstream funnel events (matches raw.events)
+│   ├── producers/                      # Event producers (Kafka publishers)
+│   │   ├── order_producer.py           # Real-time customer checkout stream
+│   │   ├── order_items_producer.py     # Line-item granular stream
+│   │   ├── order_status_producer.py    # 10-minute delivery lifecycle stream
+│   │   ├── order_issues_producer.py    # Post-delivery issue & resolution stream
+│   │   └── app_event_producer.py       # User clickstream & browsing stream
+│   └── consumers/                      # Topic consumers (Kafka subscribers)
+│       ├── order_consumer.py           # Orders processor & live revenue tracker
+│       ├── order_items_consumer.py     # Items sink & product sales aggregator
+│       ├── order_status_consumer.py    # Delivery SLA & rider tracking
+│       ├── order_issues_consumer.py    # Defect rate & quality monitoring
+│       └── app_event_consumer.py       # Live conversion funnel analytics
 │
 ├── loaders/
-│   ├── load_to_bigquery.py             # CSV → BigQuery Ingestion (autodetect)
+│   ├── load_to_bigquery.py             # CSV → BigQuery Ingestion (--dimensions-only / --facts-only)
 │   └── setup_datasets.py               # (Alternative) Python setup helper for BQ
 │
 ├── dbt/
@@ -255,7 +274,15 @@ python loaders/setup_datasets.py
 #### Load Data
 After provisioning the datasets:
 ```bash
-python data/generate_data.py
+# 1. Generate master dimension tables (stores, riders, customers, products, marketing)
+python data/generate_dimensions.py
+
+# 2. Generate baseline transactional facts (orders, items, issues, clickstream)
+python data/generate_facts.py
+
+# (Or run both together: python data/generate_data.py)
+
+# 3. Load CSVs into BigQuery raw dataset (supports --dimensions-only or --facts-only)
 python loaders/load_to_bigquery.py
 ```
 

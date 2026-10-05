@@ -13,6 +13,6 @@ with DAG("ecommerce_ingestion", default_args=default_args, schedule_interval="@d
         bash_command=f"cd {PROJECT_ROOT}/data && python generate_data.py")
 
     load_raw = BashOperator(task_id="load_raw_to_bigquery",
-        bash_command=f"cd {PROJECT_ROOT}/ingestion && python load_raw.py")
+        bash_command=f"cd {PROJECT_ROOT}/loaders && python load_to_bigquery.py")
 
     generate >> load_raw
